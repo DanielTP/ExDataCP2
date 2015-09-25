@@ -1,6 +1,3 @@
-library(dplyr)
-library(ggplot2)
-
 # Checking data
 if ((!file.exists("summarySCC_PM25.rds")) | (!file.exists("Source_Classification_Code.rds"))) {
         url <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip"
@@ -12,21 +9,23 @@ if ((!file.exists("summarySCC_PM25.rds")) | (!file.exists("Source_Classification
 data_pm <- readRDS("summarySCC_PM25.rds")
 data_sc <- readRDS("Source_Classification_Code.rds")
 data_pm <- transform(data_pm, fips = factor(fips), SCC = factor(SCC), Pollutant = factor(Pollutant), type = factor(type), year = factor(year))
-list_SCC <- data_sc[grep("* - Coal", data_sc$EI.Sector),]
-for (i in 1 : length(list_SCC$SCC)) {
-        data_pm3 <- data_pm[data_pm$SCC == as.character(list_SCC[i,1]),]
-        if (i == 1) {
-                data_pm2 <- data_pm3
-        } else {
-                data_pm2 <- cbind(data_pm2,data_pm3)
-        }
-}
-data_pm3 <- tbl_df(data_pm2)
-data_pm4 <- summarize(data_pm3,)
 
+# Getting Coal-related SCC and Calculate total emissions
+list_SCC <- data_sc[grep("* - Coal", data_sc$EI.Sector),]
+sum_99 <- 0
+sum_02 <- 0
+sum_05 <- 0
+sum_08 <- 0
+for (i in 1 : length(list_SCC$SCC)) {
+        data_pm2 <- data_pm[data_pm$SCC == as.character(list_SCC[i,1]),]
+        sum_99 <- sum_99 + sum(data_pm2[data_pm2$year == 1999,4])
+        sum_02 <- sum_02 + sum(data_pm2[data_pm2$year == 2002,4])
+        sum_05 <- sum_05 + sum(data_pm2[data_pm2$year == 2005,4])
+        sum_08 <- sum_08 + sum(data_pm2[data_pm2$year == 2008,4])
+}
 
 # Plot
-png("plot3.png")
-ggplot(data_m, aes(year, emi)) + geom_point() + facet_wrap( ~ type, nrow = 2, ncol = 2) + labs(x = "Year") + labs(y = "Total Emissions in Baltimore City (tons)")
-
+png("plot4.png")
+plot(c(sum_99,sum_02,sum_05,sum_08), type = "l", xlab = "Year", ylab = "Total Coal Combusition-Related Sources (tons)", xaxt = "n")
+axis(1, at = c(1,2,3,4), labels = c("1999", "2002", "2005", "2008"))
 dev.off()

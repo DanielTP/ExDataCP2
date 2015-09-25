@@ -8,6 +8,8 @@ if ((!file.exists("summarySCC_PM25.rds")) | (!file.exists("Source_Classsificatio
 # Reading & Processing data
 data_pm <- readRDS("summarySCC_PM25.rds")
 data_pm <- transform(data_pm, fips = factor(fips), SCC = factor(SCC), Pollutant = factor(Pollutant), type = factor(type), year = factor(year))
+
+# Calculate emissions in 4 years
 sum_99 <- sum(data_pm[data_pm$year == 1999,4])
 sum_02 <- sum(data_pm[data_pm$year == 2002,4])
 sum_05 <- sum(data_pm[data_pm$year == 2005,4])
